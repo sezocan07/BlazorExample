@@ -1,0 +1,44 @@
+﻿@page "/life-cycle"
+@page "/life-cycle/{PageParameter}"
+
+
+<p><b style="color:red">nInitializedAsync:</b> @PageInit</p>
+<hr />
+<p><b style="color:red">OnAfterRenderAsync :</b>@PageAfterInit</p>
+<hr />
+<p><b style="color:red">OnParametersSetAsync:</b> @Parameter</p>
+
+
+@code {
+
+
+    [Parameter]
+    public string PageParameter { get; set; }
+    public string PageParameter2 { get; set; }
+
+    string PageInit, PageAfterInit, Parameter;
+
+
+    protected async override Task OnInitializedAsync()
+    {
+        PageInit = "Sayfa Ilk Yuklendi";
+    }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender == true)
+        {
+            PageAfterInit = "Sayfa Yuklendikten Sonra";
+            StateHasChanged();
+        }
+
+    }
+
+    protected async override Task OnParametersSetAsync()
+    {
+        Parameter = PageParameter;
+   
+    }
+
+}
+

@@ -1,0 +1,132 @@
+﻿<div class="d-flex justify-content-center w-100 align-items-center flex-wrap-reverse mb-5">
+    <div class="alert alert-success me-2 mb-2 mb-xl-0 mb-lg-0 mb-md-0" style="padding: 6px 8px;">Toplam @PageMaxSize sayfa ( @DataCount kayıt)  </div>
+   
+    <select @onchange="DropDownPagerListCount_Change" class="form-control" aria-label="pageitemsize" style="max-width:185px">
+
+
+        <option value="10" selected> 10 Tane Göster </option>
+        <option value="20"> 20 Tane Göster </option>
+        <option value="50"> 50 Tane Göster </option>
+        <option value="100"> 100 Tane Göster </option>
+        <option value="200"> 200 Tane Göster </option>
+        <option value="@DataCount"> Hepsini Göster </option>
+
+
+
+
+    </select>
+    @if (PageMaxSize != 0)
+    {
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center mb-2 mb-xl-0 mb-lg-0 mb-md-0">
+
+                <li class="page-item"><a class="page-link" @onclick="((x)=>  Pager_Click(1))">  İlk  </a>   </li>
+
+                <li class="page-item"><a class="page-link" @onclick="((x)=>  PagerBalance_Click(-1))">  Geri  </a>   </li>
+                @*left pg5 negative *@
+                @for (int i = 3; i >= 1; i--)
+                {
+
+                    int newVal = PageIndex - i;
+                    if (newVal > 0)
+                    {
+                        <li class="page-item"><a class="page-link" @onclick="((x)=>  Pager_Click(newVal))"> @newVal.ToString("n0") </a>   </li>
+                    }
+                }
+
+                @*SecetedPage*@
+                <li class="page-item active"><a class="page-link" @onclick="((x)=>  Pager_Click(PageIndex))"> @PageIndex.ToString("n0") </a>   </li>
+
+                @*left pg5 postive *@
+                @for (int i = 1; i <= 3; i++)
+                {
+                    int newVal = PageIndex + i;
+                    if (newVal <= PageMaxSize)
+                    {
+                        <li class="page-item"><a class="page-link" @onclick="((x) => Pager_Click(newVal))"> @newVal.ToString("n0") </a>   </li>
+                    }
+                }
+                <li class="page-item"><a class="page-link" @onclick="((x)=>  PagerBalance_Click(1))">  İleri  </a>   </li>
+
+                <li class="page-item"><a class="page-link" @onclick="((x)=>  Pager_Click(PageMaxSize))">  Son  </a>   </li>
+
+            </ul>
+        </nav>
+    }
+
+</div>
+
+
+@code {
+
+
+    [Parameter] public int ListCount { get; set; }
+    [Parameter] public int PageIndex { get; set; } = 1;
+    [Parameter] public int DataCount { get; set; }
+    private int pagerMaxSize = 0;
+    [Parameter] public int PageMaxSize { get { return pagerMaxSize = Convert.ToInt32((decimal.Round(DataCount / ListCount))) + ((DataCount % ListCount) != 0 ? 1 : 0); } set { pagerMaxSize = value; } }
+    //PageMaxSize = Convert.ToInt32((decimal.Round(DataCount / ListCount))) + ((DataCount % ListCount) != 0 ? 1 : 0);
+
+
+    [Parameter] public EventCallback<int> OnSelectedPageIndex_Event { get; set; }
+    [Parameter] public EventCallback<int> OnSelectedListCount_Event { get; set; }
+
+    [Parameter] public EventCallback<PagingPage> OnPagerAllChange_Event { get; set; }
+
+
+    private PagingPage PagerParamsInfo { get; set; }
+
+    async Task DropDownPagerListCount_Change(ChangeEventArgs args)
+    {
+
+        if (int.Parse(((string)args.Value)) > 1)
+        {
+            ListCount = int.Parse(((string)args.Value));
+            await OnSelectedListCount_Event.InvokeAsync(ListCount);
+            await AnpagerAllChangeParamsInvoke();
+            StateHasChanged();
+        }
+        else
+        {
+            ListCount = 1;
+            await OnSelectedListCount_Event.InvokeAsync(ListCount);
+            await AnpagerAllChangeParamsInvoke();
+            StateHasChanged();
+        }
+
+        //await RefleshData();
+    }
+
+    async Task AnpagerAllChangeParamsInvoke()
+    {
+        PagerParamsInfo = new PagingPage();
+        PagerParamsInfo.PageIndex = this.PageIndex;
+        PagerParamsInfo.DataCount = this.DataCount;
+        PagerParamsInfo.ListCount = this.ListCount;
+        PagerParamsInfo.PageMaxSize = this.PageMaxSize;
+        await OnPagerAllChange_Event.InvokeAsync(PagerParamsInfo);
+    }
+
+    async Task PagerBalance_Click(int pageIndex)
+    {
+        int newVal = PageIndex + pageIndex;
+        if (newVal <= 0)
+            return;
+        if (newVal > PageMaxSize)
+            return;
+
+        PageIndex = newVal;
+        await OnSelectedPageIndex_Event.InvokeAsync(PageIndex);
+        await AnpagerAllChangeParamsInvoke();
+        StateHasChanged();
+    }
+
+    async Task Pager_Click(int pageIndex)
+    {
+        PageIndex = pageIndex;
+        await OnSelectedPageIndex_Event.InvokeAsync(PageIndex);
+        await AnpagerAllChangeParamsInvoke();
+        StateHasChanged();
+    }
+
+}

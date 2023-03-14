@@ -1,0 +1,97 @@
+﻿@page "/call-api"
+@inject HttpClient _httpClient
+@inject IJSRuntime _jsRuntime
+@if (postsList == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+      
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Title</th>
+                <th>Body</th>
+                <th></th>
+
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var posts in postsList)
+            {
+                <tr>
+                    <td>@posts.id</td>
+                    <td>@posts.title.</td>
+                    <td>@posts.body</td>
+                    <td>
+                        <ButonComponent BtnClick="(()=>DeletePostAsync(posts.id))" BtnStyle="danger sm" BtnText="Sil" />
+                    </td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+    <PagingPage ListCount="@ListCount" PageIndex="@PageIndex" DataCount="@DataCount"
+                PageMaxSize="@PageMaxSize" OnPagerAllChange_Event="@OnPagerAllChange_Event">
+
+    </PagingPage>
+}
+
+@code {
+
+
+    //IEnumerable<PostsModel> postsListAll;
+    IEnumerable<PostsModel> postsList;
+    public int ListCount { get; set; } = 10;
+    public int PageIndex { get; set; } = 1;
+    public int DataCount { get; set; }
+    public int PageMaxSize { get; set; } = 0;
+
+    protected async override Task OnInitializedAsync()
+    {
+        await GetDataAsync();
+
+    }
+
+    async Task DeletePostAsync(int Id)
+    {
+
+        bool confirmed = await _jsRuntime.InvokeAsync<bool>("confirm", "Silinecek Eminmisin");
+        if (confirmed == true)
+        {
+            var result = await _httpClient.DeleteAsync("https://jsonplaceholder.typicode.com/posts/" + Id);
+            if (result.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+
+                await GetDataAsync();
+                await _jsRuntime.InvokeVoidAsync("alert", Id + " nolu Kayit Silindi");
+            }
+        }
+
+
+    }
+
+    async Task GetDataAsync()
+    {
+        var result = await _httpClient.GetFromJsonAsync<IEnumerable<PostsModel>>("https://jsonplaceholder.typicode.com/posts");
+        if (result.Count() > 0)
+        {
+
+            postsList = result;
+            DataCount = result.Count();
+            postsList = result.Skip((PageIndex - 1) * ListCount).Take(ListCount).ToList();
+        }
+    }
+    async Task OnPagerAllChange_Event(PagingPage pager)
+    {
+        PageIndex = pager.PageIndex;
+        ListCount = pager.ListCount;
+        DataCount = pager.DataCount;
+        PageMaxSize = pager.PageMaxSize;
+        await GetDataAsync();
+    }
+
+}
+

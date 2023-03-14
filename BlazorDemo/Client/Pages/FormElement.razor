@@ -1,0 +1,66 @@
+﻿@page "/form-element"
+@inject IJSRuntime _jsRuntime
+
+<div class="form-group">
+    Input Text
+    <input class="form-control" @bind="inputChanceElement" @bind:event="oninput" @onchange="SearchChanged" type="text" />
+    <small class="form-text text-muted">@inputChanceElement</small>
+</div>
+<hr />
+<div class="form-group">
+    <ButonComponent BtnClick="BtnClick" BtnStyle="danger" BtnText="Tikla"/>
+   
+</div>
+<hr />
+<div class="form-check">
+   
+    <input class="form-check-input" @bind="CheckStatus" type="checkbox" />
+
+    <label class="form-check-label">@CheckStatus</label>
+</div>
+<hr />
+<div class="form-group">
+    <label for="exampleFormControlSelect2">Secilen :@SelectedValue </label>
+    <select @onchange="@SelectedValueChanged" data="@SelectedValue"
+            class="form-control">
+
+        <option selected value="0">Seciniz</option>
+        <option  value="1">1</option>
+        <option  value="2">2</option>
+        <option  value="3">3</option>
+        <option  value="4">4</option>
+        <option  value="5">5</option>
+
+    </select>
+</div>
+
+
+
+
+@code {
+
+    string? inputChanceElement;
+    bool CheckStatus = false;
+    string SelectedValue;
+    async Task BtnClick()
+    {
+
+        await _jsRuntime.InvokeVoidAsync("ButonaTikla");
+    }
+
+    async Task SearchChanged(ChangeEventArgs e)
+    {
+
+        inputChanceElement = e.Value.ToString();
+
+
+    }
+    async Task SelectedValueChanged(ChangeEventArgs e)
+    {
+        SelectedValue = e.Value.ToString();
+    }
+   
+
+
+}
+

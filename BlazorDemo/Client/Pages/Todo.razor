@@ -1,0 +1,94 @@
+﻿@page "/todo"
+@inject IJSRuntime _jsRuntime
+
+<div>
+    <div class="form-group">
+        <label for="title">Title</label>
+        <input @bind-value="todoModel.Title" type="text" class="form-control" id="title" aria-describedby="title" placeholder="Title Giriniz">
+
+    </div>
+
+    <div class="form-check">
+        <input @bind="todoModel.IsDone" type="checkbox" class="form-check-input" id="isdone">
+        <label class="form-check-label" for="isdone">Is Done</label>
+    </div>
+    <ButonComponent BtnStyle="primary" BtnText="Ekle" BtnClick="TodoAdd"></ButonComponent>
+
+</div>
+<hr />
+@if (todoList == null)
+{
+    <p><em>Bekleyiniz...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>is Done</th>
+                <th></th>
+
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var todo in todoList)
+            {
+                <tr @onclick="(()=>(SelectedTodo(todo)))">
+                    <td>@todo.Title</td>
+                    <td>@todo.IsDone</td>
+                    <td>
+                    <ButonComponent BtnStyle="danger sm" BtnText="Sil" BtnClick="(()=>(DeleteTodo(todo)))"/>
+                    </td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+
+    List<TodoModel> todoList = new List<TodoModel>();
+
+    TodoModel todoModel = new TodoModel();
+
+
+    async Task TodoAdd()
+    {
+
+        if (todoModel.Title != null)
+        {
+            var result = todoList.Where(x => x.Title == todoModel.Title);
+            if (result.Count() == 0)
+            {
+                todoList.Add(todoModel);
+                todoModel = new TodoModel();
+            }
+           
+
+        }
+        else
+        {
+            await _jsRuntime.InvokeVoidAsync("alert", "Title Alani Bos OLamaz!");
+        }
+
+
+    }
+    async Task DeleteTodo(TodoModel model)
+    {
+        bool confirmed = await _jsRuntime.InvokeAsync<bool>("confirm", "Silinecek Eminmisin");
+        if (confirmed == true) {
+            todoList.Remove(model);
+            todoModel = new TodoModel();
+        }
+
+    }
+    async Task SelectedTodo(TodoModel model) {
+        todoModel.Title = model.Title;
+        todoModel.IsDone = model.IsDone;
+    }
+
+}
+

@@ -1,0 +1,34 @@
+﻿@page "/routing"
+@inject NavigationManager _nav
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" @onclick="@(()=>LinkTo("/"))">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" @onclick="@(()=>LinkTo("counter"))">Counter</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" @onclick="@(()=>LinkTo("fetchdata"))">Fetch Data</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" @onclick="@(()=>LinkTo("call-api"))">Call Api</a>
+                </li>
+
+            </ul>
+         
+        </div>
+    </nav>
+
+
+@code {
+
+    async Task LinkTo(string value) {
+        _nav.NavigateTo(value);
+    }
+
+}
+

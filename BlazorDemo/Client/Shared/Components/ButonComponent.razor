@@ -1,0 +1,15 @@
+﻿
+<button @onclick="BtnClick" class="btn btn-@BtnStyle">@BtnText</button>
+
+@code {
+    [Parameter] public string BtnStyle { get; set; }
+    [Parameter] public string BtnText { get; set; }
+    [Parameter] public EventCallback BtnClick { get; set; }
+
+    protected async Task ClickEvent()
+    {
+      
+        await BtnClick.InvokeAsync();
+    }
+}
+
